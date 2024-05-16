@@ -33,7 +33,7 @@ Input/output types:
 ```
 
 
-> ![TIP]
+> [!TIP]
 > Use `github-linguist -j | from json` to work with the data by yourself.
 
 [linguist]: https://github.com/github-linguist/linguist
