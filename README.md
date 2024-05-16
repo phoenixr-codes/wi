@@ -36,4 +36,7 @@ Input/output types:
 > [!TIP]
 > Use `github-linguist -j | from json` to work with the data by yourself.
 
+> [!TIP]
+> `wi` stands for "written in".
+
 [linguist]: https://github.com/github-linguist/linguist
