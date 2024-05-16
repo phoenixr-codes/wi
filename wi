@@ -1,0 +1,68 @@
+#!/usr/bin/env nu
+
+use std [log repeat]
+
+let width = (term size).columns
+let db_url = 'https://raw.githubusercontent.com/github-linguist/linguist/4ac734c15a96f9e16fd12330d0cb8de82274f700/lib/linguist/languages.yml'
+let db_path = ($nu.home-path | path join '.config' 'wi' 'languages.yaml')
+
+def install_db [] {
+  if not ($db_path | path exists) {
+    log warning "Database not found; updating..."
+    mkdir ($db_path | path dirname)
+    http get $db_url | to yaml | save --force $db_path
+  }
+}
+
+def stats [path] {
+  let data = (
+    github-linguist -j $path
+    | from json
+    | transpose lang data
+    | each {|entry|
+      {
+        name: $entry.lang
+        data: (
+          $entry.data
+          | insert color (open $db_path | get $entry.lang | get color | into string)
+        )
+      }
+    }
+  )
+
+  # print bar
+  $data
+  | each {|entry|
+    $"(ansi --escape {bg: $entry.data.color}) (ansi reset)"
+    | repeat (
+      $entry.data.percentage
+      | into int
+      | table
+      | append 0.01
+      | append $width
+      | math product
+      | math floor
+    )
+    | str join ""
+    | print --no-newline
+  }
+  
+  print ""
+  print ""
+
+  # print language
+  $data |
+  each {|entry|
+    $"(ansi --escape {bg: $entry.data.color}) (ansi reset) ($entry.name) (ansi green)($entry.data.percentage)%(ansi reset)"
+    | print
+  }
+
+  exit 0
+}
+
+def main [
+  path: string = "."  # The path to the git repository
+]: nothing -> nothing {
+  install_db
+  stats $path
+}
